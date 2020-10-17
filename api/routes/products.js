@@ -10,8 +10,36 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
-  res.status(200).json({
+  res.status(201).json({
     message: 'Handler for POST @ /products, yay!',
+  });
+});
+
+// in express :<any name afterwards> will handle reqs sent with the name specified
+// :<param> will appear in params so it can be extracted
+router.get('/:productID', (req, res, next) => {
+  const id = req.params.productID;
+  if (id === 'penguin') {
+    res.status(200).json({
+      messsage: 'Aha, a Linux user!',
+      id: id,
+    });
+  } else {
+    res.status(200).json({
+      messsage: 'Sigh',
+    });
+  }
+});
+
+router.patch('/:productID', (req, res, next) => {
+  res.status(200).json({
+    message: 'Products updated (but not really)',
+  });
+});
+
+router.delete('/:productID', (req, res, next) => {
+  res.status(200).json({
+    message: "Products deleted (please don't look for it)",
   });
 });
 
