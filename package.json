@@ -1,0 +1,15 @@
+{
+  "name": "rest-api-nodejs-shop",
+  "version": "1.0.0",
+  "description": "A simple REST API",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "hyperinactive",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "nodemon": "^2.0.5"
+  }
+}
