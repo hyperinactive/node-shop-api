@@ -1,7 +1,9 @@
 // init dependencies
+require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 // init the express app
 const app = express();
@@ -9,6 +11,16 @@ const app = express();
 // get the routes for products and orders
 const productRoutes = require('./api/routes/products');
 const orderRoutes = require('./api/routes/orders');
+
+mongoose.connect(
+  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}${process.env.DB_HOST}/${process.env.DB_NAME}?retryWrites=true&w=majority`,
+  {
+    // to solve the deprecated errors
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+);
+console.log('connected to db');
 
 // dev is a format of the output
 // morgan will track requests and log them into the terminal
@@ -32,7 +44,14 @@ app.use((req, res, next) => {
   // before POST/PUT/PATCH reqs, browsers will always send OPTIONS req first
   if (req.method === 'OPTIONS') {
     // enable these reqs
-    req.header('Access-Control-Allow-Methods', 'PUT', 'POST', 'PATCH', 'DELETE', 'GET');
+    req.header(
+      'Access-Control-Allow-Methods',
+      'PUT',
+      'POST',
+      'PATCH',
+      'DELETE',
+      'GET'
+    );
     req.status(200).json({});
   }
 });

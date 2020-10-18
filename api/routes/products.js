@@ -1,6 +1,9 @@
 // setup, make a router
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
+
+const Product = require('../models/productModel');
 
 // cause the incoming URL reqs will already be /products we only need to look for '/'
 router.get('/', (req, res, next) => {
@@ -10,10 +13,25 @@ router.get('/', (req, res, next) => {
 });
 
 router.post('/', (req, res, next) => {
-  const product = {
+  // make a product and add it to the db
+  console.log('called');
+  const product = new Product({
+    _id: new mongoose.Types.ObjectId(),
     name: req.body.name,
     price: req.body.price,
-  };
+  });
+  res.status(200).json({
+    message: 'Please work'
+  })
+  // handle the promise
+  product
+    .save()
+    .then((result) => {
+      console.log(result);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
   res.status(201).json({
     message: 'Handler for POST @ /products, yay!',
     createdProduct: product,
