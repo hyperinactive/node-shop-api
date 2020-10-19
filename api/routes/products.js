@@ -20,9 +20,6 @@ router.post('/', (req, res, next) => {
     name: req.body.name,
     price: req.body.price,
   });
-  res.status(200).json({
-    message: 'Please work'
-  })
   // handle the promise
   product
     .save()

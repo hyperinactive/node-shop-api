@@ -4,6 +4,7 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+// const cors = require('cors');
 
 // init the express app
 const app = express();
@@ -20,7 +21,14 @@ mongoose.connect(
     useUnifiedTopology: true,
   }
 );
-console.log('connected to db');
+
+mongoose.connection.on('connected', () => {
+  console.log('connected to mongodb oh hell yea');
+});
+
+mongoose.connection.on('error', () => {
+  console.log('error connecting to mongodb oh hell yea');
+});
 
 // dev is a format of the output
 // morgan will track requests and log them into the terminal
@@ -30,30 +38,27 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // extracts json data
 app.use(bodyParser.json());
 
+// app.use(cors());
+
 /**
  * CORS handling
  * before proceeding with the URL, we adjust the header
  * must enable access to all (can also restrict it)
  */
 app.use((req, res, next) => {
-  res.header('Access-Control-Origin', '*');
+  res.header('Access-Control-Allow-Origin', '*');
   res.header(
     'Access-Control-Allow-Headers',
-    'Origin, X-requested-With, Content-Type, Accept, Authorization'
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
   );
   // before POST/PUT/PATCH reqs, browsers will always send OPTIONS req first
   if (req.method === 'OPTIONS') {
     // enable these reqs
-    req.header(
-      'Access-Control-Allow-Methods',
-      'PUT',
-      'POST',
-      'PATCH',
-      'DELETE',
-      'GET'
-    );
-    req.status(200).json({});
+    res.header('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
+    return res.status(200).json({});
   }
+  // allows the app to continue if all is good
+  next();
 });
 
 // every URL targeting /products will be handled by productsRoutes
