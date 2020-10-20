@@ -5,8 +5,8 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
   // serial id number types.objectid
   _id: mongoose.Schema.Types.ObjectId,
-  name: String,
-  price: Number,
+  name: {type: String, require},
+  price: {type: Number, require},
 });
 
 // make a model and export it
