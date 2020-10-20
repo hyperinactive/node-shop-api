@@ -54,7 +54,7 @@ router.post('/', (req, res, next) => {
         res.status(201).json({
           message: 'Product created successfully',
           createdProduct: {
-            name: result.price,
+            name: result.name,
             price: result.price,
             _id: result._id,
             request: {
@@ -85,7 +85,7 @@ router.get('/:productId', (req, res, next) => {
     .then((result) => {
       res.status(200).json({
         product: result,
-        requiest: {
+        request: {
           type: 'GET',
           description: 'Get all products from',
           url: 'http://localhost:3000/products/',
