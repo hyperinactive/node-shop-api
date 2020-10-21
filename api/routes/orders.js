@@ -9,6 +9,9 @@ const Product = require('../models/productModel');
 router.get('/', (req, res, next) => {
   Order.find()
     .select('product quantity _id')
+    // populate will give the info or a peroduct
+    // if filled, the second arg will give only specified fields
+    .populate('product', 'name')
     .then((result) => {
       res.status(200).json({
         count: result.length,
@@ -31,7 +34,11 @@ router.get('/', (req, res, next) => {
       });
     });
 });
-
+/**
+ * passed upload.single() in the middle of the post()
+ * can have as many middleware handlers as I want
+ * they execute before the main handler
+ */
 router.post('/', (req, res, next) => {
   // check if the product exists first
   Product.findById(req.body.productId)
@@ -73,6 +80,7 @@ router.post('/', (req, res, next) => {
 router.get('/:orderID', (req, res, next) => {
   Order.findById(req.params.orderID)
     .select('quantity product _id')
+    .populate('product')
     .then((result) => {
       if (!result) {
         return res.status(404).json({

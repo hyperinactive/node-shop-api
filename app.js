@@ -4,7 +4,6 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-// const cors = require('cors');
 
 // init the express app
 const app = express();
@@ -30,6 +29,9 @@ mongoose.connection.on('error', () => {
   console.log('error connecting to mongodb oh hell yea');
 });
 
+// make the files from 'uploads' public
+// only look for requests at /uploads
+app.use('/uploads', express.static('uploads'));
 // dev is a format of the output
 // morgan will track requests and log them into the terminal
 app.use(morgan('dev'));
@@ -37,8 +39,6 @@ app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 // extracts json data
 app.use(bodyParser.json());
-
-// app.use(cors());
 
 /**
  * CORS handling
