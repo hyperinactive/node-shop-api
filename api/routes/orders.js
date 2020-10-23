@@ -2,11 +2,12 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const authentication = require('../middleware/authentication');
 
 const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
 
-router.get('/', (req, res, next) => {
+router.get('/', authentication, (req, res, next) => {
   Order.find()
     .select('product quantity _id')
     // populate will give the info or a peroduct
@@ -39,7 +40,7 @@ router.get('/', (req, res, next) => {
  * can have as many middleware handlers as I want
  * they execute before the main handler
  */
-router.post('/', (req, res, next) => {
+router.post('/', authentication, (req, res, next) => {
   // check if the product exists first
   Product.findById(req.body.productId)
     .then((product) => {
@@ -77,7 +78,7 @@ router.post('/', (req, res, next) => {
     });
 });
 
-router.get('/:orderID', (req, res, next) => {
+router.get('/:orderID', authentication, (req, res, next) => {
   Order.findById(req.params.orderID)
     .select('quantity product _id')
     .populate('product')
@@ -102,7 +103,7 @@ router.get('/:orderID', (req, res, next) => {
     });
 });
 
-router.delete('/:orderID', (req, res, next) => {
+router.delete('/:orderID', authentication, (req, res, next) => {
   Order.deleteOne({ _id: req.params.orderID })
     .then((result) => {
       if (!result) {

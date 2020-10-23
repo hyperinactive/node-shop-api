@@ -3,6 +3,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const multer = require('multer');
+const authentication = require('../middleware/authentication');
 
 // config for storing the images through multer
 const storage = multer.diskStorage({
@@ -68,7 +69,7 @@ router.get('/', (req, res, next) => {
     });
 });
 
-router.post('/', upload.single('productImage'), (req, res, next) => {
+router.post('/', authentication, upload.single('productImage'), (req, res, next) => {
   console.log(req.file);
   // make a product and add it to the db
   const product = new Product({
@@ -131,7 +132,7 @@ router.get('/:productId', (req, res, next) => {
     });
 });
 
-router.patch('/:productId', (req, res, next) => {
+router.patch('/:productId', authentication, (req, res, next) => {
   const id = req.params.productId;
   /**
    * make an object of things to change in the db entry
@@ -164,7 +165,7 @@ router.patch('/:productId', (req, res, next) => {
     });
 });
 
-router.delete('/:productId', (req, res, next) => {
+router.delete('/:productId', authentication, (req, res, next) => {
   const id = req.params.productId;
   Product.deleteOne({ _id: id })
     .then((result) => {
