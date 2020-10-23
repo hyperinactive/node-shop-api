@@ -3,9 +3,9 @@ const router = express.Router();
 const mongoose = require('mongoose');
 
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 const User = require('../models/userModel');
-const { route } = require('./products');
 
 router.post('/signup', (req, res, next) => {
   // chceck if a user already exists
@@ -44,6 +44,61 @@ router.post('/signup', (req, res, next) => {
       });
     }
   });
+});
+
+router.post('/login', (req, res, next) => {
+  User.findOne({ email: req.body.email })
+    .then((user) => {
+      if (user.length < 1) {
+        return res.status(404).json({
+          message: 'Authentication failed',
+        });
+      } else {
+        // hash the provided pass and compare the hashes
+        bcrypt.compare(req.body.password, user.password, (err, result) => {
+          // this err is made when the pass doesn't match
+          if (err) {
+            return res.status(404).json({
+              message: 'Authentication failed',
+            });
+          }
+          // compare successful
+          if (result) {
+            /**
+             * first arg is the payload (don't provide it with anything valuable)
+             * second is the secret key
+             * third is the options arg, here I simply want it to just expire in an hour
+             * fourth would be a callback to provide us with a token, but it can be done like this (synchronous though)
+             * const token = jwt.sign(...)
+             * 
+             * NOTE: the token is not ENCRYPTED, only ENCODED (useful~ jwt.io decode)
+             */
+            const token = jwt.sign(
+              {
+                email: user.email,
+                userId: user._id,
+              },
+              process.env.JWT_KEY,
+              {
+                expiresIn: '1h',
+              }
+            );
+            return res.status(200).json({
+              message: 'Authentication successful',
+              token: token,
+            });
+          }
+          res.status(404).json({
+            message: 'Authentication failed, incorrect password',
+          });
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).json({
+        error: err,
+      });
+    });
 });
 
 router.delete('/:userId', (req, res, next) => {

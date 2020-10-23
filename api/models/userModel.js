@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 
+// deprecation warning handler for 'unique' field
+mongoose.set('useCreateIndex', true);
+
 const userSchema = new mongoose.Schema({
   // serial id number types.objectid
   _id: mongoose.Schema.Types.ObjectId,
