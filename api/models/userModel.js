@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema({
     // unique doesn't actaully validate anything, it is used for optimization
     unique: true,
     // regex to match against
-    match: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/
+    match: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
   },
   password: {
     type: String,

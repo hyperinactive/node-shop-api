@@ -5,11 +5,22 @@ const mongoose = require('mongoose');
 const productSchema = new mongoose.Schema({
   // serial id number types.objectid
   _id: mongoose.Schema.Types.ObjectId,
-  name: { type: String, require },
-  price: { type: Number, require },
+  name: {
+    type: String,
+    required: true,
+  },
+  price: {
+    type: Number,
+    required: true,
+  },
   productImage: {
     type: String,
     required: true,
+  },
+  store: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: 'Store',
   },
 });
 

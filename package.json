@@ -1,6 +1,6 @@
 {
   "name": "rest-api-nodejs-shop",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "A simple REST API",
   "main": "server.js",
   "scripts": {

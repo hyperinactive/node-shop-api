@@ -12,6 +12,7 @@ const app = express();
 const productRoutes = require('./api/routes/products');
 const orderRoutes = require('./api/routes/orders');
 const userRoutes = require('./api/routes/userRoutes');
+const storesRoutes = require('./api/routes/stores');
 
 mongoose.connect(
   `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}${process.env.DB_HOST}/${process.env.DB_NAME}?retryWrites=true&w=majority`,
@@ -66,7 +67,7 @@ app.use((req, res, next) => {
 app.use('/products', productRoutes);
 app.use('/orders', orderRoutes);
 app.use('/user', userRoutes);
-
+app.use('/stores/', storesRoutes);
 // if the code gets past the previoys two lines -> means the URL didn't match and we handle errors
 // catch errors with the wrong URL
 app.use((req, res, next) => {
