@@ -1,190 +1,22 @@
 // setup, make a router
 const express = require('express');
 const router = express.Router();
-const mongoose = require('mongoose');
-const multer = require('multer');
 const authentication = require('../middleware/authentication');
+const upload = require('../middleware/multer');
 
-// config for storing the images through multer
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    // error, destination
-    cb(null, './uploads/');
-  },
-  filename: function (req, file, cb) {
-    // error, file name
-    cb(null, Date.now() + file.originalname);
-  },
-});
-
-// config for filtering files by their mimetype
-const fileFilter = (req, file, cb) => {
-  file.mimetype === 'image/jpeg' || file.mimetype === 'image/png'
-    ? cb(null, true)
-    : cb(null, false);
-};
-
-// init the multer, passing in an object will set its config
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 1920 * 1920 * 5,
-  },
-  fileFilter: fileFilter,
-});
-
-const Product = require('../models/productModel');
+const ProductController = require('../controllers/productsController');
 
 // cause the incoming URL reqs will already be /products we only need to look for '/'
-router.get('/', (req, res, next) => {
-  Product.find()
-    // select which fields are to be diplayed
-    .select('name price _id productImage')
-    .then((result) => {
-      // create an object to send as a response
-      const response = {
-        // some useful metadata
-        count: result.length,
-        products: result.map((item) => {
-          return {
-            name: item.name,
-            price: item.price,
-            _id: item._id,
-            productImage: item.productImage,
-            request: {
-              type: 'GET',
-              description: 'Get the product from',
-              url: 'http://localhost:3000/products/' + item._id,
-            },
-          };
-        }),
-      };
-      res.status(201).json({ responseObj: response });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json({
-        error: err,
-      });
-    });
-});
-
-router.post('/', authentication, upload.single('productImage'), (req, res, next) => {
-  console.log(req.file);
-  // make a product and add it to the db
-  const product = new Product({
-    _id: new mongoose.Types.ObjectId(),
-    name: req.body.name,
-    price: req.body.price,
-    productImage: req.file.path,
-  });
-  // handle the promise
-  product
-    .save()
-    .then((result) => {
-      console.log(result);
-      if (result) {
-        res.status(201).json({
-          message: 'Product created successfully',
-          createdProduct: {
-            name: result.name,
-            price: result.price,
-            _id: result._id,
-            request: {
-              type: 'GET',
-              description: 'Get the created product from',
-              url: 'http://localhost:3000/products/' + result._id,
-            },
-          },
-        });
-      } else {
-        res.status(404).json({
-          message: 'No item matches the id',
-        });
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json({ error: err });
-    });
-});
+router.get('/', ProductController.get_all_products);
+router.post('/', authentication, upload.single('productImage'), ProductController.create_product);
 
 // in express :<any name afterwards> will handle reqs sent with the name specified
 // :<param> will appear in params so it can be extracted
-router.get('/:productId', (req, res, next) => {
-  const id = req.params.productId;
-  Product.findById(id)
-    .select('name price _id productImage')
-    .then((result) => {
-      res.status(200).json({
-        product: result,
-        request: {
-          type: 'GET',
-          description: 'Get all products from',
-          url: 'http://localhost:3000/products/',
-        },
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      // pass the error as well
-      res.status(500).json({ error: err });
-    });
-});
+router.get('/:productId', ProductController.get_product);
 
-router.patch('/:productId', authentication, (req, res, next) => {
-  const id = req.params.productId;
-  /**
-   * make an object of things to change in the db entry
-   * loop over the body of the request
-   * populate object with the changes from the request
-   */
-  const updateOps = {};
-  for (const ops of req.body) {
-    updateOps[ops.propName] = ops.value;
-  }
-  Product.update(
-    { _id: id },
-    // $set expects an object
-    { $set: updateOps }
-  )
-    .then((result) => {
-      console.log(result);
-      res.status(200).json({
-        message: 'Product updated',
-        request: {
-          type: 'GET',
-          description: 'Get the updated product from',
-          url: 'http://localhost:3000/products' + id,
-        },
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(500).json(err);
-    });
-});
+router.patch('/:productId', authentication, ProductController.update_product);
 
-router.delete('/:productId', authentication, (req, res, next) => {
-  const id = req.params.productId;
-  Product.deleteOne({ _id: id })
-    .then((result) => {
-      res.status(200).json({
-        message: 'Product deleted',
-        request: {
-          type: 'POST',
-          url: 'http://localhost:3000/products',
-          body: {
-            name: 'String',
-            price: 'Number',
-          },
-        },
-      });
-    })
-    .catch((err) => {
-      res.status(500).json(err);
-    });
-});
+router.delete('/:productId', authentication, ProductController.delete_product);
 
 // export the router's handlers
 module.exports = router;
