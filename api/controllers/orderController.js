@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
+const User = require('../models/userModel');
 
 /**
  * NOTE: https://stackoverflow.com/questions/7137397/module-exports-vs-exports-in-node-js
@@ -15,6 +16,7 @@ exports.get_all_orders = (req, res, next) => {
     .populate('product', 'name')
     .then((result) => {
       console.log(res.locals.userData);
+
       res.status(200).json({
         count: result.length,
         orders: result.map((item) => {
@@ -51,15 +53,29 @@ exports.create_order = (req, res, next) => {
           message: 'Product not found',
         });
       }
+
       const order = new Order({
         _id: mongoose.Types.ObjectId(),
         quantity: req.body.quantity,
         product: req.body.productId,
+        buyer: res.locals.userData.userId,
       });
+
+      User.findById(res.locals.userData.userId).then((user) => {
+        if (user) {
+          user.orders.push(order);
+          user.save();
+        } else {
+          return res.status(404).json({
+            message: 'No user with that id found',
+          });
+        }
+      });
+
       return order.save();
     })
     .then((result) => {
-      res.status(200).json({
+      res.status(201).json({
         message: 'Order created successfully',
         request: {
           type: 'GET',
@@ -73,6 +89,7 @@ exports.create_order = (req, res, next) => {
       });
     })
     .catch((err) => {
+      console.log(err);
       res.status(500).json({
         error: err,
       });

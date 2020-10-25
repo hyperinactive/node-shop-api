@@ -12,11 +12,16 @@ const orderSchema = new mongoose.Schema({
     type: Number,
     default: 1,
   },
+  buyer: {
+    type: String,
+    ref: 'User',
+    required: true,
+  },
   createdAt: {
     required: true,
     type: Date,
     set: Date.now,
-    default: Date.now
+    default: Date.now,
   },
 });
 

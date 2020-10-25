@@ -5,7 +5,8 @@ const User = require('../models/userModel');
 exports.get_all_products = (req, res, next) => {
   Product.find()
     // select which fields are to be diplayed
-    .select('name price _id productImage')
+    .select('name price _id productImage seller')
+    .populate('seller', 'username')
     .then((result) => {
       // create an object to send as a response
       const response = {
@@ -15,6 +16,7 @@ exports.get_all_products = (req, res, next) => {
           return {
             name: item.name,
             price: item.price,
+            seller: item.seller,
             _id: item._id,
             productImage: item.productImage,
             request: {
@@ -41,18 +43,37 @@ exports.create_product = (req, res, next) => {
     name: req.body.name,
     price: req.body.price,
     productImage: req.file.path,
+    seller: res.locals.userData.userId,
   });
   // handle the promise
   product
     .save()
     .then((result) => {
+      // const user = await User.findById(res.locals.userData.userId);
       if (result) {
+        /**
+         * nested .then()???
+         * async what???
+         * I know it's ugly, but it works for now so ughh... don't be me
+         */ 
+        User.findById(res.locals.userData.userId).then((user) => {
+          if (user) {
+            user.products.push(result);
+            user.save();
+          } else {
+            res.status(404).json({
+              message: 'No user with that id found',
+            });
+          }
+        });
+
         res.status(201).json({
           message: 'Product created successfully',
           createdProduct: {
             name: result.name,
             price: result.price,
             _id: result._id,
+            seller: result.seller,
             request: {
               type: 'GET',
               description: 'Get the created product from',
@@ -74,7 +95,7 @@ exports.create_product = (req, res, next) => {
 exports.get_product = (req, res, next) => {
   const id = req.params.productId;
   Product.findById(id)
-    .select('name price _id productImage')
+    .select('name price _id productImage seller')
     .then((result) => {
       res.status(200).json({
         product: result,
