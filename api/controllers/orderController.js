@@ -4,16 +4,17 @@ const Product = require('../models/productModel');
 
 /**
  * NOTE: https://stackoverflow.com/questions/7137397/module-exports-vs-exports-in-node-js
- * could've been done with module.exports as well, no diff here really
+ * coulve be done with module.exports as well, no diff here really
  */
 
 exports.get_all_orders = (req, res, next) => {
   Order.find()
-    .select('product quantity _id createdOn')
+    .select('product quantity _id')
     // populate will give the info or a peroduct
     // if filled, the second arg will give only specified fields
     .populate('product', 'name')
     .then((result) => {
+      console.log(res.locals.userData);
       res.status(200).json({
         count: result.length,
         orders: result.map((item) => {
@@ -21,7 +22,6 @@ exports.get_all_orders = (req, res, next) => {
             _id: item._id,
             product: item.product,
             quantity: item.quantity,
-            createdOn: item.createdOn,
             request: {
               type: 'GET',
               url: 'http://localhost:3000/orders/' + item._id,
@@ -59,7 +59,7 @@ exports.create_order = (req, res, next) => {
       return order.save();
     })
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         message: 'Order created successfully',
         request: {
           type: 'GET',
@@ -67,7 +67,6 @@ exports.create_order = (req, res, next) => {
             _id: result._id,
             product: result.product,
             quantity: result.quantity,
-            createdOn: result.createdOn
           },
           url: 'http://localhost:3000/orders/' + result._id,
         },
@@ -82,7 +81,7 @@ exports.create_order = (req, res, next) => {
 
 exports.get_order = (req, res, next) => {
   Order.findById(req.params.orderID)
-    .select('quantity product _id createdOn')
+    .select('quantity product _id')
     .populate('product')
     .then((result) => {
       if (!result) {

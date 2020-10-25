@@ -17,10 +17,9 @@ const productSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  store: {
+  seller: {
     type: mongoose.Schema.Types.ObjectId,
     required: true,
-    ref: 'Store',
   },
 });
 

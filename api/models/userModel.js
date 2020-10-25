@@ -14,9 +14,34 @@ const userSchema = new mongoose.Schema({
     // regex to match against
     match: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
   },
+  username: {
+    type: String,
+    required: true,
+  },
   password: {
     type: String,
     required: true,
+  },
+  products: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Product',
+    },
+  ],
+  orders: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Order',
+    },
+  ],
+  currency: {
+    type: Number,
+    default: 0,
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin', 'superuser'],
+    default: 'user',
   },
 });
 

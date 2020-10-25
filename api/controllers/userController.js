@@ -22,11 +22,11 @@ exports.signup = (req, res, next) => {
             _id: mongoose.Types.ObjectId(),
             email: req.body.email,
             password: hash,
+            username: req.body.username,
           });
           user
             .save()
             .then((result) => {
-              console.log(user);
               res.status(201).json({
                 message: 'User created',
               });
@@ -43,6 +43,8 @@ exports.signup = (req, res, next) => {
 };
 
 exports.login = (req, res, next) => {
+  console.log(req.params);
+  console.log(req.body);
   User.findOne({ email: req.body.email })
     .then((user) => {
       if (user.length < 1) {
@@ -73,6 +75,7 @@ exports.login = (req, res, next) => {
               {
                 email: user.email,
                 userId: user._id,
+                role: user.role,
               },
               process.env.JWT_KEY,
               {
