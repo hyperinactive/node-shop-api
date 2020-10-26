@@ -96,6 +96,7 @@ exports.get_product = (req, res, next) => {
   const id = req.params.productId;
   Product.findById(id)
     .select('name price _id productImage seller')
+    .populate('seller', 'username')
     .then((result) => {
       res.status(200).json({
         product: result,

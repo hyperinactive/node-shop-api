@@ -9,14 +9,18 @@ const User = require('../models/userModel');
  */
 
 exports.get_all_orders = (req, res, next) => {
+  if (res.locals.userData.role !== 'admin') {
+    return res.status(401).json({
+      message: 'Unauthorized access, admins only',
+    });
+  }
   Order.find()
-    .select('product quantity _id')
+    .select('product quantity _id buyer')
     // populate will give the info or a peroduct
     // if filled, the second arg will give only specified fields
     .populate('product', 'name')
+    .populate('buyer', 'username')
     .then((result) => {
-      console.log(res.locals.userData);
-
       res.status(200).json({
         count: result.length,
         orders: result.map((item) => {
@@ -24,6 +28,7 @@ exports.get_all_orders = (req, res, next) => {
             _id: item._id,
             product: item.product,
             quantity: item.quantity,
+            buyer: item.buyer,
             request: {
               type: 'GET',
               url: 'http://localhost:3000/orders/' + item._id,
@@ -98,14 +103,21 @@ exports.create_order = (req, res, next) => {
 
 exports.get_order = (req, res, next) => {
   Order.findById(req.params.orderID)
-    .select('quantity product _id')
+    .select('quantity product _id buyer')
     .populate('product')
+    .populate('buyer', 'username')
     .then((result) => {
       if (!result) {
         return res.status(404).json({
           message: 'Order not found',
         });
       }
+      if (res.locals.userData.userId !== result.buyer) {
+        return mongoose.set.status(401).json({
+          message: 'Accessing orders of other users forbidden',
+        });
+      }
+
       res.status(200).json({
         order: result,
         request: {
@@ -129,6 +141,14 @@ exports.delete_order = (req, res, next) => {
           message: 'No order found',
         });
       }
+
+      // don't allow other users to delete orders
+      if (res.locals.userData.role !== 'admin' || res.locals.userData.userId === result.buyer) {
+        return res.status(401).json({
+          message: 'Unauthorized access, admins only',
+        });
+      }
+
       res.status(200).json({
         order: result,
         request: {

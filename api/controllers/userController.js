@@ -3,6 +3,33 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
 
+exports.get_all_users = (req, res, next) => {
+  if (res.locals.userData.role !== 'admin') {
+    return res.status(401).json({
+      message: 'Unauthorized access, admins only',
+    });
+  }
+  User.find().then((result) => {
+    const response = {
+      count: result.length,
+      users: result.map((item) => {
+        return {
+          name: item.email,
+          price: item.username,
+          products: item.products,
+          orders: item.orders,
+          _id: item._id,
+          request: {
+            type: 'GET',
+            description: 'Get the users from',
+            url: 'http://localhost:3000/users/' + item._id,
+          },
+        };
+      }),
+    };
+  });
+};
+
 exports.signup = (req, res, next) => {
   // chceck if a user already exists
   User.find({ email: req.body.email }).then((user) => {
