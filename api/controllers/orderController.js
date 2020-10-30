@@ -134,6 +134,25 @@ exports.get_order = (req, res, next) => {
 };
 
 exports.delete_order = (req, res, next) => {
+  Order.findById(req.params.orderID)
+    .then((order) => {
+      if (!order) {
+        return res.status(404).json({
+          message: 'Order not found',
+        });
+      }
+      if (res.locals.userData.userId !== order.buyer) {
+        return res.status(401).json({
+          message: 'Deleting orders of other users forbidden',
+        });
+      }
+    })
+    .catch((err) => {
+      return res.status(500).json({
+        error: err,
+      });
+    });
+
   Order.deleteOne({ _id: req.params.orderID })
     .then((result) => {
       if (!result) {
@@ -143,7 +162,10 @@ exports.delete_order = (req, res, next) => {
       }
 
       // don't allow other users to delete orders
-      if (res.locals.userData.role !== 'admin' || res.locals.userData.userId === result.buyer) {
+      if (
+        res.locals.userData.role !== 'admin' ||
+        res.locals.userData.userId === result.buyer
+      ) {
         return res.status(401).json({
           message: 'Unauthorized access, admins only',
         });

@@ -55,7 +55,7 @@ exports.create_product = (req, res, next) => {
          * nested .then()???
          * async what???
          * I know it's ugly, but it works for now so ughh... don't be me
-         */ 
+         */
         User.findById(res.locals.userData.userId).then((user) => {
           if (user) {
             user.products.push(result);
@@ -117,6 +117,26 @@ exports.get_product = (req, res, next) => {
 
 exports.update_product = (req, res, next) => {
   const id = req.params.productId;
+
+  Product.findById(id)
+    .then((result) => {
+      if (!result) {
+        return res.status(404).json({
+          message: 'Product not found',
+        });
+      }
+      if (res.locals.userData.userId !== result.buyer) {
+        return mongoose.set.status(401).json({
+          message: 'Accessing products of other users forbidden',
+        });
+      }
+    })
+    .catch((err) => {
+      return req.status(500).json({
+        error: err,
+      });
+    });
+
   /**
    * make an object of things to change in the db entry
    * loop over the body of the request
@@ -148,6 +168,26 @@ exports.update_product = (req, res, next) => {
 
 exports.delete_product = (req, res, next) => {
   const id = req.params.productId;
+
+  Product.findById(id)
+    .then((result) => {
+      if (!result) {
+        return res.status(404).json({
+          message: 'Product not found',
+        });
+      }
+      if (res.locals.userData.userId !== result.buyer) {
+        return res.status(401).json({
+          message: 'Deleting products of other users forbidden',
+        });
+      }
+    })
+    .catch((err) => {
+      return req.status(500).json({
+        error: err,
+      });
+    });
+
   Product.deleteOne({ _id: id })
     .then((result) => {
       res.status(200).json({
