@@ -1,7 +1,7 @@
 # node-shop-api
 
-RESTful api that recreates the core of what an online shop may use as their REST api service, in a simple way.
-The api stores its data to a cloud database, encrypting sensitive data about its users.
+Simple RESTful API projects that recreates the core of what an online shop may use.
+The API stores its data into a cloud database, encrypting sensitive data about its users.
 It does its authentication using JSON tokens and limits access based on assigned roles.
 
 ## Endpoints
